@@ -1,12 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import {
+    getAuth,
+    GoogleAuthProvider,
+    onAuthStateChanged,
+    signInWithPopup,
+    signOut,
+} from "firebase/auth";
 
 const Nav = () => {
+    // const initialUserData = localStorage.getItem("userData")
+    //     ? JSON.parse(localStorage.getItem("userData"))
+    //     : {};
+
     const [show, setShow] = useState(false);
     const { pathname } = useLocation();
     const [searchValue, setSearchValue] = useState("");
     const navigate = useNavigate();
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    const [userData, setUserData] = useState({});
+
+    useEffect(() => {
+        onAuthStateChanged(auth, user => {
+            console.log("user" + user);
+            if (user) {
+                if (pathname === "/") {
+                    navigate("/main");
+                }
+            } else {
+                navigate("/");
+            }
+        });
+    }, []);
 
     useEffect(() => {
         window.addEventListener("scroll", handleScroll);
@@ -29,6 +56,28 @@ const Nav = () => {
         navigate(`/search?q=${e.target.value}`);
     };
 
+    const handleAuth = () => {
+        signInWithPopup(auth, provider)
+            .then(result => {
+                setUserData(result.user);
+                // localStorage.setItem("userData", JSON.stringify(result.user));
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    };
+
+    const handleSignOut = () => {
+        signOut(auth)
+            .then(() => {
+                setUserData({});
+                navigate("/");
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    };
+
     return (
         <NavWrapper show={show}>
             <Logo>
@@ -40,21 +89,70 @@ const Nav = () => {
             </Logo>
 
             {pathname === "/" ? (
-                <Login>Login</Login>
+                <Login onClick={handleAuth}>Login</Login>
             ) : (
-                <Input
-                    className="nav__input"
-                    type="text"
-                    placeholder="검색해주세요."
-                    value={searchValue}
-                    onChange={handleChange}
-                />
+                <>
+                    <Input
+                        className="nav__input"
+                        type="text"
+                        placeholder="검색해주세요."
+                        value={searchValue}
+                        onChange={handleChange}
+                    />
+                    <SignOut>
+                        <UserImg
+                            src={userData.photoURL}
+                            alt={userData.displayName}
+                        />
+                        <DropDown>
+                            <span onClick={handleSignOut}>Sign Out</span>
+                        </DropDown>
+                    </SignOut>
+                </>
             )}
         </NavWrapper>
     );
 };
 
 export default Nav;
+
+const DropDown = styled.div`
+    position: absolute;
+    top: 48px;
+    right: 0px;
+    background: rgb(19, 19, 19);
+    border: 1px solid rgba(151, 151, 151, 0.34);
+    border-radius: 4px;
+    box-shadow: rgb(0 0 0 / 50%) 0px 0px 18px 0px;
+    padding: 10px;
+    font-size: 14px;
+    letter-spacing: 3px;
+    width: 100%;
+    display: none;
+`;
+
+const SignOut = styled.div`
+    position: relative;
+    height: 48px;
+    width: 48px;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        ${DropDown} {
+            display: block;
+            transition-duration: 1s;
+        }
+    }
+`;
+
+const UserImg = styled.img`
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+`;
 
 const Login = styled.a`
     background-color: rgba(0, 0, 0, 0.6);
