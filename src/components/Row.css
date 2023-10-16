@@ -106,6 +106,7 @@
 
 
 .swiper-pagination {
+
     text-align: right !important;
 }
 
@@ -126,7 +127,8 @@
     color: white !important;
 }
 
-.swiper-button-next::after, .swiper-button-prev::after {
+.swiper-button-next::after,
+.swiper-button-prev::after {
     font-size: 1.3rem !important;
     font-weight: 600 !important;
 }

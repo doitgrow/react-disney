@@ -1,7 +1,7 @@
 import React from "react";
 import Banner from "../../components/Banner";
 import Category from "../../components/Category";
-import Row from "../../components/Row";
+import Row from "../../components/RowBackup";
 import styled from "styled-components";
 import requests from "../../api/request";
 
